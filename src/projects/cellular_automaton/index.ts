@@ -43,10 +43,6 @@ type FormattedIteration<Arr extends BitArr, Iteration extends number> = [
     ...Tuple<Iteration, '-'>
 ];
 
-const a = [1, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0] as const;
-
-type Test = MapAsFormatted<Calculate<typeof a>>;
-
 type Calculate<Iteration extends BitArr, Acc extends readonly BitArr[] = []> = 
     Length<Iteration> extends 1 | 2 
         ? [...Acc, Iteration]
@@ -59,3 +55,14 @@ type MapAsFormatted<Arr extends readonly BitArr[]> = {
             : Arr[K]
         : Arr[K];
 }
+
+const a = [1, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0] as const;
+type Test = MapAsFormatted<Calculate<typeof a>>;
+
+// Output
+type Fst = Test[0];
+type Snd = Test[1];
+type Trd = Test[2];
+type Fth = Test[3];
+type Fft = Test[4];
+type Sxt = Test[5];
