@@ -1,9 +1,12 @@
-import { access } from "fs";
+import { Serializable } from "child_process";
 import { Add, Subtract } from "../../types/arithmetic";
 import { Length, MapAsString, NumberRange, ParseInt, Tuple } from "../../types/utils";
-import { Bit, BitArr } from "./binaryTypes";
-import { RuleForX } from "./rules";
+import { BitArr } from "./binaryTypes";
+import { RulePattern, Rule } from "./rules";
 
+/**
+ * Neighborhood cells of the element.
+ */
 type GetNeighborhood<
     Arr extends BitArr, 
     Index extends number
@@ -19,8 +22,12 @@ type GetNeighborhood<
         : never 
     : never;
 
+/**
+ * Next
+ */
 type NextIteration<
     Arr extends BitArr,
+    Pattern extends RulePattern
 > = 
 Subtract<Length<Arr>, 2> extends infer NextArrLength 
     ? NextArrLength extends number
@@ -30,7 +37,7 @@ Subtract<Length<Arr>, 2> extends infer NextArrLength
                     K extends string 
                         ? ParseInt<K> extends never 
                             ? NextArr[K]
-                            : RuleForX<GetNeighborhood<Arr, Add<ParseInt<K>, 1>>>
+                            : Rule<GetNeighborhood<Arr, Add<ParseInt<K>, 1>>, Pattern>
                         : NextArr[K];
             } 
             : never
@@ -43,10 +50,10 @@ type FormattedIteration<Arr extends BitArr, Iteration extends number> = [
     ...Tuple<Iteration, '-'>
 ];
 
-type Calculate<Iteration extends BitArr, Acc extends readonly BitArr[] = []> = 
+type Calculate<Iteration extends BitArr, Pattern extends RulePattern, Acc extends readonly BitArr[] = []> = 
     Length<Iteration> extends 1 | 2 
         ? [...Acc, Iteration]
-        : Calculate<NextIteration<Iteration>, [...Acc, Iteration]>
+        : Calculate<NextIteration<Iteration, Pattern>, Pattern, [...Acc, Iteration]>
 
 type MapAsFormatted<Arr extends readonly BitArr[]> = {
     [K in keyof Arr]: K extends string
@@ -57,7 +64,9 @@ type MapAsFormatted<Arr extends readonly BitArr[]> = {
 }
 
 const a = [1, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0] as const;
-type Test = MapAsFormatted<Calculate<typeof a>>;
+type Test = MapAsFormatted<
+    Calculate<typeof a, [1, 0, 0]>
+>;
 
 // Output
 type Fst = Test[0];
@@ -66,3 +75,8 @@ type Trd = Test[2];
 type Fth = Test[3];
 type Fft = Test[4];
 type Sxt = Test[5];
+
+type Result = {
+    [K in NumberRange<0, Length<Test>>]: Test[K]
+}
+

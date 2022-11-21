@@ -1,10 +1,8 @@
-import { BitArr } from "./binaryTypes";
+import { Bit, BitArr } from "./binaryTypes";
 
-export type RuleForX<T extends BitArr> = 
+export type RulePattern = readonly [Bit, Bit, Bit];
+
+export type Rule<T extends BitArr, Pattern extends RulePattern> = 
     T extends [infer X, infer Y, infer Z] 
-        ? [X, Y, Z] extends
-            (
-                [1, 0, 0]
-            )
-            ? 1 : 0
+        ? [X, Y, Z] extends Pattern ? 1 : 0
         : never;
